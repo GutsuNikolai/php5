@@ -1,18 +1,37 @@
 <?php
+/**
+ * Включение отображения ошибок
+ */
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
-// Подключаем вспомогательные функции
+
+/**
+ * Подключаем вспомогательные функции
+ */
 include_once('../helpers.php');
 
-// Массив для ошибок
+/**
+ * Массив для ошибок
+ *
+ * @var array
+ */
 $errors = [];
 
-
-
-// Обработка данных формы
+/**
+ * Обработка данных формы
+ * Проверяем, была ли отправлена форма методом POST.
+ */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    /**
+     * Путь к файлу с рецептами
+     *
+     * @var string
+     */
     $recipeFile = '../../storage/recipes.txt';
-    // Фильтруем входные данные
+    
+    /**
+     * Фильтрация входных данных
+     */
     $title = filterData($_POST['title']);
     $category = filterData($_POST['category']);
     $ingredients = filterData($_POST['ingredients']);
@@ -20,7 +39,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $steps = $_POST['steps'];
     $tags = $_POST['tags'];
 
-    // Валидация данных
+    /**
+     * Валидация данных
+     */
     if (empty($title)) {
         $errors['title'] = 'Название рецепта обязательно!';
     }
@@ -37,11 +58,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors['steps'] = 'Шаги приготовления обязательны!';
     }
 
-    // Если нет ошибок, сохраняем данные
-    // Проверка данных перед записью
-
+    /**
+     * Если нет ошибок, сохраняем данные
+     */
     if (empty($errors)) {
-        // Формируем данные для записи
+        /**
+         * Формируем данные для записи в файл
+         *
+         * @var array
+         */
         $formData = [
             'title' => $title,
             'category' => $category,
@@ -51,18 +76,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'tags' => $tags
         ];
 
-    
-        
-        $recipeFile = '../../storage/recipes.txt';
-
+        /**
+         * Проверяем, существует ли файл с рецептами и загружаем его содержимое
+         */
         $existingData = file_exists($recipeFile) ? json_decode(file_get_contents($recipeFile), true) : [];
 
-        // Добавляем новый рецепт
+        // Добавляем новый рецепт в массив
         $existingData[] = $formData;
 
-
-        // Сохраняем данные в файл
-        if (file_put_contents($recipeFile, json_encode($existingData, JSON_PRETTY_PRINT) . PHP_EOL)) {
+        /**
+         * Сохраняем данные в файл
+         */
+        if (file_put_contents($recipeFile, json_encode($formData) . PHP_EOL, FILE_APPEND)) {
             // Перенаправляем на главную страницу
             header("Location: /public/index.php");
             exit;
@@ -72,4 +97,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
-
