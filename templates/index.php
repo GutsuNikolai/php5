@@ -4,16 +4,21 @@ require_once __DIR__ . '/../src/db.php';
 
 $recipesPerPage = 5; // Количество рецептов на странице
 
-// Получаем текущую страницу из GET-параметра
+// Получаем текущую страницу из GET-параметра, устанавливаем минимум 1
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $page = max($page, 1);
 $offset = ($page - 1) * $recipesPerPage;
 
 try {
-    // Получаем подключение
+    /**
+     * Получает подключение к базе данных.
+     *
+     * @return PDO Объект подключения к БД
+     * @throws PDOException В случае ошибки подключения
+     */
     $pdo = getDbConnection();
 
-    // Выполняем запрос для получения всех рецептов с учетом пагинации
+    // Подготавливаем и выполняем запрос для получения рецептов с учетом пагинации
     $stmt = $pdo->prepare("SELECT id, title FROM recipes ORDER BY id ASC LIMIT :limit OFFSET :offset");
     $stmt->bindParam(':limit', $recipesPerPage, PDO::PARAM_INT);
     $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
@@ -24,14 +29,16 @@ try {
     $totalRecipesStmt = $pdo->query("SELECT COUNT(*) FROM recipes");
     $totalRecipes = $totalRecipesStmt->fetchColumn();
 
-    // Рассчитываем общее количество страниц
+    // Вычисляем общее количество страниц
     $totalPages = ceil($totalRecipes / $recipesPerPage);
 
 } catch (PDOException $e) {
+    // Обработка ошибки подключения или запроса
     echo "Ошибка при подключении к базе данных: " . $e->getMessage();
     exit;
 }
 ?>
+
 
 <h2>Список рецептов</h2>
 

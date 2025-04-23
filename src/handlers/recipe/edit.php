@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $steps = trim($_POST['steps'] ?? '');
     $tags = trim($_POST['tags'] ?? '');
 
-    // Простая валидация
+    // Простая валидация обязательных полей
     if (empty($id) || empty($title) || empty($category) || empty($ingredients) || empty($description) || empty($steps)) {
         echo "Пожалуйста, заполните все обязательные поля.";
         exit;
@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $tags = htmlspecialchars($tags, ENT_QUOTES, 'UTF-8');
     $category = htmlspecialchars($category, ENT_QUOTES, 'UTF-8');
     
-    // SQL-запрос на обновление
+    // SQL-запрос на обновление рецепта
     $sql = "UPDATE recipes 
             SET title = :title, 
                 category = :category, 
@@ -39,8 +39,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             WHERE id = :id";
 
     try {
+        /**
+         * Получает соединение с базой данных.
+         *
+         * @return PDO Объект подключения к базе данных
+         * @throws PDOException При ошибке соединения с БД
+         */
         $pdo = getDbConnection();
 
+        // Подготавливаем и выполняем SQL-запрос
         $stmt = $pdo->prepare($sql);
         $success = $stmt->execute([
             ':title' => $title,
@@ -53,6 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ]);
 
         if ($success) {
+            // Перенаправление на страницу рецепта после успешного обновления
             header("Location: /index.php?page=show&id=$id");
             exit;
         } else {
@@ -60,9 +68,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
     } catch (PDOException $e) {
+        // Обработка ошибки при работе с БД
         echo "Ошибка при работе с базой данных: " . $e->getMessage();
     }
 
 } else {
+    // Обработка запроса, отличного от POST
     echo "Неверный метод запроса.";
 }

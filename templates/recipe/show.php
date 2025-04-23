@@ -1,32 +1,38 @@
 <?php
+// Подключение к базе данных
 require_once __DIR__ . '/../../src/db.php';
 
+// Получаем ID рецепта из параметров запроса
 $id = $_GET['id'] ?? null;
 
 if (!$id) {
+    // Проверка: если ID не передан, выводим сообщение и прекращаем выполнение
     echo "ID рецепта не указан.";
     return;
 }
 
 try {
+    // Устанавливаем подключение к БД
     $pdo = getDbConnection();
 
-    // Получаем рецепт
+    // Получаем данные рецепта по ID
     $stmt = $pdo->prepare("SELECT * FROM recipes WHERE id = :id");
     $stmt->execute([':id' => $id]);
     $recipe = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$recipe) {
+        // Проверка: если рецепт не найден, сообщаем и завершаем выполнение
         echo "Рецепт не найден.";
         return;
     }
 
-    // Получаем название категории
+    // Получаем название категории по ID из таблицы категорий
     $categoryStmt = $pdo->prepare("SELECT name FROM categories WHERE id = :id");
     $categoryStmt->execute([':id' => $recipe['category']]);
     $category = $categoryStmt->fetchColumn();
-    
-    // Экранируем данные для вывода в HTML
+
+    // Экранируем текстовые поля рецепта и название категории
+    // Это предотвращает XSS-атаки при выводе данных в HTML
     $recipe['title'] = htmlspecialchars($recipe['title'], ENT_QUOTES, 'UTF-8');
     $recipe['ingredients'] = htmlspecialchars($recipe['ingredients'], ENT_QUOTES, 'UTF-8');
     $recipe['description'] = htmlspecialchars($recipe['description'], ENT_QUOTES, 'UTF-8');
@@ -34,9 +40,11 @@ try {
     $category = htmlspecialchars($category, ENT_QUOTES, 'UTF-8');
 
 } catch (PDOException $e) {
+    // Обработка ошибок при работе с базой данных
     echo "Ошибка: " . $e->getMessage();
     return;
 }
+
 ?>
 
 

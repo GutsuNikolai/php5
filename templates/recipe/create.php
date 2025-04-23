@@ -1,4 +1,4 @@
-<!-- templates/recipe/create.php -->
+
 
 <h2>Добавить рецепт</h2>
 
