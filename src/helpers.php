@@ -1,12 +1,13 @@
 <?php
-/**
- * Функция для фильтрации данных.
- * Она удаляет лишние пробелы и преобразует специальные символы в HTML-сущности для предотвращения XSS-атак.
- * 
- * @param string $data Данные, которые нужно фильтровать.
- * @return string Отфильтрованные данные.
- */
-function filterData($data) {
-    return htmlspecialchars(trim($data));
+function getRecipeById($id): ?array {
+    require_once __DIR__ . '/db.php'; // если db.php находится в той же папке (src/)
+
+
+    $pdo = getDbConnection();
+
+    $stmt = $pdo->prepare("SELECT * FROM recipes WHERE id = :id");
+    $stmt->execute(['id' => $id]);
+
+    $recipe = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $recipe ?: null;
 }
-?>
